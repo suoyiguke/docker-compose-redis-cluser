@@ -1,0 +1,144 @@
+version: '3'
+services:
+  # 主节点的容器
+  redis-server-master:
+    image: redis
+    container_name: redis-server-master
+    ports:
+      - 6379:6379
+    restart: always
+    # 指定时区，保证容器内时间正确
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      # 映射配置文件和数据目录
+      - ./redis-master.conf:/usr/local/etc/redis/redis.conf
+      - ./data/redis-master:/data
+    sysctls:
+      net.core.somaxconn: '511'
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.1
+
+  # 从节点1的容器
+  redis-server-slave-1:
+    image: redis
+    container_name: redis-server-slave-1
+    ports:
+      - 6380:6379
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-slave1.conf:/usr/local/etc/redis/redis.conf
+      - ./data/redis-slave-1:/data
+    sysctls:
+      net.core.somaxconn: '511'
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.2
+  # 从节点2的容器
+  redis-server-slave-2:
+    image: redis
+    container_name: redis-server-slave-2
+    ports:
+      - 6381:6379
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-slave2.conf:/usr/local/etc/redis/redis.conf
+      - ./data/redis-slave-2:/data
+    sysctls:
+      net.core.somaxconn: '511'
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.3
+   # 从节点3的容器
+  redis-server-slave-3:
+    image: redis
+    container_name: redis-server-slave-3
+    ports:
+      - 6382:6379
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-slave3.conf:/usr/local/etc/redis/redis.conf
+      - ./data/redis-slave-3:/data
+    sysctls:
+      net.core.somaxconn: '511'
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.4
+
+  redis-server-sentinel-1:
+    image: redis
+    container_name: redis-server-sentinel-1
+    ports:
+      - "6383:26379"
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-sentinel1.conf:/usr/local/etc/redis/sentinel.conf
+    sysctls:
+      net.core.somaxconn: '511'
+    command: ["redis-sentinel","/usr/local/etc/redis/sentinel.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.5
+  redis-server-sentinel-2:
+    image: redis 
+    container_name: redis-server-sentinel-2
+    ports:
+      - "6384:26379"
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-sentinel2.conf:/usr/local/etc/redis/sentinel.conf
+    command: ["redis-sentinel","/usr/local/etc/redis/sentinel.conf"]
+    sysctls:
+      net.core.somaxconn: '511' 
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.6
+  redis-server-sentinel-3:
+    image: redis 
+    container_name: redis-server-sentinel-3
+    ports:
+      - "6385:26379"
+    restart: always
+    depends_on:
+      - redis-server-master
+    environment:
+      TZ: "Asia/Shanghai"
+    volumes:
+      - ./redis-sentinel3.conf:/usr/local/etc/redis/sentinel.conf
+    sysctls: 
+      net.core.somaxconn: '511'
+    command: ["redis-sentinel","/usr/local/etc/redis/sentinel.conf"]
+    networks:
+      hx_net:
+        ipv4_address: 10.10.10.7
+networks:
+    hx_net:
+      driver: bridge
+      ipam:
+        config:
+          - subnet: 10.10.10.0/16
